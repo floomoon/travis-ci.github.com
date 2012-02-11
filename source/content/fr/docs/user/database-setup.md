@@ -1,32 +1,31 @@
 ---
-title: Databases on Travis workers
+title: Base de données sur les workers de Travis
 kind: content
 ---
 
-Every Travis CI worker has preinstalled software that's commonly used by the open source developer community. Some of the services available are:
+Tout les workers de Travis CI ont des logiciels pré-installés souvent utilisés par les développeurs de la communauté open source. Quelques uns des services disponibles sont:
 
-* databases – MySQL, PostgreSQL, SQLite3, MongoDB
-* key-value stores – Redis, Riak, memcached
-* messaging systems – RabbitMQ
+* Bases de données – MySQL, PostgreSQL, SQLite3, MongoDB
+* Sauvegarde clé-valeur – Redis, Riak, memcached
+* Systèmes de messagerie – RabbitMQ
 * node.js, ImageMagick
 
-You can find the full list of installed software, as well as Ruby engines and versions, in the [worker
-configuration file][config]. That file specifies which [recipes from the cookbook][cookbook] are used while building the worker instance.
+Vous pourrez trouver la liste complète des logiciels installés, comme les versions de Ruby, dans le [fichier de configuration du worker][config]. Ce fichier spécifie quelles [recettes du cookbook][cookbook] sont utilisées lors de la construction de l'instance du worker.
 
-Some of these, e.g. node.js and memcached, are either available in the PATH or running on a default port, so no special information about them is required. Others, namely databases, may require authentication.
+Certains d'entre eux e.g. node.js et memcached, sont accessibles dans le PATH où s'exécute sur un port par défaut, par conséquent, aucunes informations supplémentaires sont requises. Les autres, autrement dit les base de données, peuvent avoir besoin d'une authentification.
 
-Here is how to configure your project to use databases in its tests. This assumes you have already visited [Build configuration][] documentation.
+Nous allons voir ici comment configurer votre projet pour utiliser une base de données dans vos tests. Ceci suppose que vous avez déjà visité la documentation [configurer une build][build configuration].
 
 ### SQLite3
 
-Probably the easiest and simplest solution for your relation database needs. If you don't specifically want to test how your code behaves with other databases, SQLite in memory might be the best and fastest option.
+C'est probablement la solution la plus facile et la plus rapide pour vos besoins en base de données relationnelle. Si vous ne voulez pas tester le comportement de votre code avec d'autres base de données, SQLite en mémoire peut être la meilleur option et la plus rapide à mettre en place.
 
-For ruby projects, ensure that you have the sqlite3 ruby bindings in your bundle:
+Pour les projets Ruby, assurez-vous d'avoir une liason sqlite3 de Ruby dans votre bundle: 
 
     # Gemfile
     gem 'sqlite3'
 
-If your project is a Rails app, all you need to set up is:
+Si votre projet est une application Rails, vous n'avez qu'a définir ceci:
 
     # config/database.yml in Rails
     test:
@@ -34,14 +33,14 @@ If your project is a Rails app, all you need to set up is:
       database: ":memory:"
       timeout: 500
 
-However, if your project is a general library or plugin, you need to handle connecting to the database yourself in tests. For example, connecting with ActiveRecord:
+Sinon, dans le cas où votre projet est une librairie où un plugin, vous devez configurer la connexion à la base de données vous même dans vos tests. Par exemple, voici comment faire avec ActiveRecord:
 
     ActiveRecord::Base.establish_connection :adapter => 'sqlite3',
                                             :database => ':memory:'
 
 ### MySQL
 
-MySQL on Travis requires no authentication. Specify an empty username and no password:
+MySQL ne requiert aucune authentification sur Travis. Définissez un utilisateur et un mot de passe vide:
 
     mysql:
       adapter: mysql2
@@ -49,7 +48,7 @@ MySQL on Travis requires no authentication. Specify an empty username and no pas
       username: 
       encoding: utf8
 
-You do have to create the `myapp_test` database first. Run this as part of your build script:
+Vous devez ensuite créer la base de données `myapp_test`. Exécuter ceci avec votre script de build:
 
     # .travis.yml
     before_script:
@@ -57,14 +56,14 @@ You do have to create the `myapp_test` database first. Run this as part of your 
 
 ### PostgreSQL
 
-PostgreSQL requires authentication with "postgres" user and no password:
+PostgreSQL requiert une authentification avec l'utilisateur "postgres" sans mot de passe:
 
     postgres:
       adapter: postgresql
       database: myapp_test
       username: postgres
 
-You have to create the database as part of your build process:
+Vous devez ensuite créer la base de données avec votre script de build:
 
     # .travis.yml
     before_script:
@@ -72,12 +71,12 @@ You have to create the database as part of your build process:
 
 ### MongoDB
 
-MongoDB requires no authentication or database creation up front:
+MongoDB ne requiert aucune authentification où de création d'une base de données:
 
     require 'mongo'
     Mongo::Connection.new('localhost').db('myapp')
 
-In cases you need to create users for your database, you can do something like this:
+Dans de cas où vous avez besoin de créer des utilisateurs pour votre base de données, vous pouvez faire quelque chose comme ça:
 
     # .travis.yml
     before_script:
@@ -87,9 +86,9 @@ In cases you need to create users for your database, you can do something like t
     uri = "mongodb://travis:test@localhost:27017/myapp"
     Mongo::Connection.from_uri(uri)
 
-### Multiple database systems
+### Les bases de données multiples
 
-If your project's tests need to run multiple times using different databases, this can be configured on Travis CI in several ways. One approach you might take is put all database configurations in one yaml file:
+Si les tests de votre projet ont besoin de s'exécuter plusieurs fois en utilisant des base de données différentes, vous pouvez le configurer sur Travis de plusieurs façons différentes. Une première approche consiste à mettre chaque configuration des bases de données dans un seul fichier yaml:  
 
     # test/database.yml
     sqlite:
@@ -106,7 +105,7 @@ If your project's tests need to run multiple times using different databases, th
       database: myapp_test
       username: postgres
 
-Then, in your test suite, read that data into a configurations hash:
+Ensuite, dans vos suites de test, récupérer toutes ces informations dans un hash contenant alors les configurations:
 
     configs = YAML.load_file('test/database.yml')
     ActiveRecord::Base.configurations = configs
@@ -115,11 +114,11 @@ Then, in your test suite, read that data into a configurations hash:
     ActiveRecord::Base.establish_connection(db_name)
     ActiveRecord::Base.default_timezone = :utc
 
-Now you use the "DB" environment variable to specify the name of the database configuration you want to use. Locally, you would run this as:
+Ici, nous avons utilisé la variable d'environnement "DB" pour définir le nom de la configuration de base de données que vous voulez utiliser. Vous pourrez exécuter ceci en local:
 
     $ DB=postgres bundle exec rake
 
-On Travis CI you want to test against all 3 databases all the time, and for that you can use the "env" option:
+Pour tester avec vos 3 base de données de façon permanente sur Travis CI, vous pouvez utiliser l'option "env":
 
     # .travis.yml
     env:
@@ -127,9 +126,9 @@ On Travis CI you want to test against all 3 databases all the time, and for that
       - DB=mysql
       - DB=postgres
 
-When doing this, please read and understand everything about the build matrix described in [Build configuration][].
+Lorsque vous faites ceci, veuillez lire tout ce qui concerne la matrice de builds détaillé dans la section [configurer une build][build configuration].
 
-Lastly, make sure that you're creating mysql and postgres databases in your build script according to the notes earlier in this document.
+Pour finir, assurez-vous d'avoir créer les bases de données mysql et postgres dans votre script de build conformément aux notes de ce document écrites plus tôt.
 
 
 [cookbook]: https://github.com/travis-ci/travis-cookbooks
