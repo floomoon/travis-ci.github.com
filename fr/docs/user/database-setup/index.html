@@ -2,7 +2,7 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8">
-    <title>Travis CI: À propos - Databases on Travis workers</title>
+    <title>Travis CI: À propos - Base de données sur les workers de Travis</title>
     <link rel="stylesheet" type="text/css" href="/style.css" media="screen">
   </head>
   <body>
@@ -31,36 +31,35 @@
         <div class="pad">
           <div id="main">
             
-              <h2>Databases on Travis workers</h2>
+              <h2>Base de données sur les workers de Travis</h2>
             
 
-            <p>Every Travis CI worker has preinstalled software that’s commonly used by the open source developer community. Some of the services available are:</p>
+            <p>Tout les workers de Travis CI ont des logiciels pré-installés souvent utilisés par les développeurs de la communauté open source. Quelques uns des services disponibles sont:</p>
 
 <ul>
-  <li>databases – MySQL, PostgreSQL, SQLite3, MongoDB</li>
-  <li>key-value stores – Redis, Riak, memcached</li>
-  <li>messaging systems – RabbitMQ</li>
+  <li>Bases de données – MySQL, PostgreSQL, SQLite3, MongoDB</li>
+  <li>Sauvegarde clé-valeur – Redis, Riak, memcached</li>
+  <li>Systèmes de messagerie – RabbitMQ</li>
   <li>node.js, ImageMagick</li>
 </ul>
 
-<p>You can find the full list of installed software, as well as Ruby engines and versions, in the <a href="https://github.com/travis-ci/travis-worker/blob/master/config/worker.production.yml">worker
-configuration file</a>. That file specifies which <a href="https://github.com/travis-ci/travis-cookbooks">recipes from the cookbook</a> are used while building the worker instance.</p>
+<p>Vous pourrez trouver la liste complète des logiciels installés, comme les versions de Ruby, dans le <a href="https://github.com/travis-ci/travis-worker/blob/master/config/worker.production.yml">fichier de configuration du worker</a>. Ce fichier spécifie quelles <a href="https://github.com/travis-ci/travis-cookbooks">recettes du cookbook</a> sont utilisées lors de la construction de l’instance du worker.</p>
 
-<p>Some of these, e.g. node.js and memcached, are either available in the PATH or running on a default port, so no special information about them is required. Others, namely databases, may require authentication.</p>
+<p>Certains d’entre eux e.g. node.js et memcached, sont accessibles dans le PATH où s’exécute sur un port par défaut, par conséquent, aucunes informations supplémentaires sont requises. Les autres, autrement dit les base de données, peuvent avoir besoin d’une authentification.</p>
 
-<p>Here is how to configure your project to use databases in its tests. This assumes you have already visited <a href="/docs/user/build-configuration/">Build configuration</a> documentation.</p>
+<p>Nous allons voir ici comment configurer votre projet pour utiliser une base de données dans vos tests. Ceci suppose que vous avez déjà visité la documentation <a href="/docs/user/build-configuration/">configurer une build</a>.</p>
 
 <h3 id="sqlite3">SQLite3</h3>
 
-<p>Probably the easiest and simplest solution for your relation database needs. If you don’t specifically want to test how your code behaves with other databases, SQLite in memory might be the best and fastest option.</p>
+<p>C’est probablement la solution la plus facile et la plus rapide pour vos besoins en base de données relationnelle. Si vous ne voulez pas tester le comportement de votre code avec d’autres base de données, SQLite en mémoire peut être la meilleur option et la plus rapide à mettre en place.</p>
 
-<p>For ruby projects, ensure that you have the sqlite3 ruby bindings in your bundle:</p>
+<p>Pour les projets Ruby, assurez-vous d’avoir une liason sqlite3 de Ruby dans votre bundle: </p>
 
 <pre><code># Gemfile
 gem 'sqlite3'
 </code></pre>
 
-<p>If your project is a Rails app, all you need to set up is:</p>
+<p>Si votre projet est une application Rails, vous n’avez qu’a définir ceci:</p>
 
 <pre><code># config/database.yml in Rails
 test:
@@ -69,7 +68,7 @@ test:
   timeout: 500
 </code></pre>
 
-<p>However, if your project is a general library or plugin, you need to handle connecting to the database yourself in tests. For example, connecting with ActiveRecord:</p>
+<p>Sinon, dans le cas où votre projet est une librairie où un plugin, vous devez configurer la connexion à la base de données vous même dans vos tests. Par exemple, voici comment faire avec ActiveRecord:</p>
 
 <pre><code>ActiveRecord::Base.establish_connection :adapter =&gt; 'sqlite3',
                                         :database =&gt; ':memory:'
@@ -77,7 +76,7 @@ test:
 
 <h3 id="mysql">MySQL</h3>
 
-<p>MySQL on Travis requires no authentication. Specify an empty username and no password:</p>
+<p>MySQL ne requiert aucune authentification sur Travis. Définissez un utilisateur et un mot de passe vide:</p>
 
 <pre><code>mysql:
   adapter: mysql2
@@ -86,7 +85,7 @@ test:
   encoding: utf8
 </code></pre>
 
-<p>You do have to create the <code>myapp_test</code> database first. Run this as part of your build script:</p>
+<p>Vous devez ensuite créer la base de données <code>myapp_test</code>. Exécuter ceci avec votre script de build:</p>
 
 <pre><code># .travis.yml
 before_script:
@@ -95,7 +94,7 @@ before_script:
 
 <h3 id="postgresql">PostgreSQL</h3>
 
-<p>PostgreSQL requires authentication with “postgres” user and no password:</p>
+<p>PostgreSQL requiert une authentification avec l’utilisateur “postgres” sans mot de passe:</p>
 
 <pre><code>postgres:
   adapter: postgresql
@@ -103,7 +102,7 @@ before_script:
   username: postgres
 </code></pre>
 
-<p>You have to create the database as part of your build process:</p>
+<p>Vous devez ensuite créer la base de données avec votre script de build:</p>
 
 <pre><code># .travis.yml
 before_script:
@@ -112,13 +111,13 @@ before_script:
 
 <h3 id="mongodb">MongoDB</h3>
 
-<p>MongoDB requires no authentication or database creation up front:</p>
+<p>MongoDB ne requiert aucune authentification où de création d’une base de données:</p>
 
 <pre><code>require 'mongo'
 Mongo::Connection.new('localhost').db('myapp')
 </code></pre>
 
-<p>In cases you need to create users for your database, you can do something like this:</p>
+<p>Dans de cas où vous avez besoin de créer des utilisateurs pour votre base de données, vous pouvez faire quelque chose comme ça:</p>
 
 <pre><code># .travis.yml
 before_script:
@@ -129,9 +128,9 @@ uri = "mongodb://travis:test@localhost:27017/myapp"
 Mongo::Connection.from_uri(uri)
 </code></pre>
 
-<h3 id="multiple-database-systems">Multiple database systems</h3>
+<h3 id="les-bases-de-donnes-multiples">Les bases de données multiples</h3>
 
-<p>If your project’s tests need to run multiple times using different databases, this can be configured on Travis CI in several ways. One approach you might take is put all database configurations in one yaml file:</p>
+<p>Si les tests de votre projet ont besoin de s’exécuter plusieurs fois en utilisant des base de données différentes, vous pouvez le configurer sur Travis de plusieurs façons différentes. Une première approche consiste à mettre chaque configuration des bases de données dans un seul fichier yaml:  </p>
 
 <pre><code># test/database.yml
 sqlite:
@@ -149,7 +148,7 @@ postgres:
   username: postgres
 </code></pre>
 
-<p>Then, in your test suite, read that data into a configurations hash:</p>
+<p>Ensuite, dans vos suites de test, récupérer toutes ces informations dans un hash contenant alors les configurations:</p>
 
 <pre><code>configs = YAML.load_file('test/database.yml')
 ActiveRecord::Base.configurations = configs
@@ -159,12 +158,12 @@ ActiveRecord::Base.establish_connection(db_name)
 ActiveRecord::Base.default_timezone = :utc
 </code></pre>
 
-<p>Now you use the “DB” environment variable to specify the name of the database configuration you want to use. Locally, you would run this as:</p>
+<p>Ici, nous avons utilisé la variable d’environnement “DB” pour définir le nom de la configuration de base de données que vous voulez utiliser. Vous pourrez exécuter ceci en local:</p>
 
 <pre><code>$ DB=postgres bundle exec rake
 </code></pre>
 
-<p>On Travis CI you want to test against all 3 databases all the time, and for that you can use the “env” option:</p>
+<p>Pour tester avec vos 3 base de données de façon permanente sur Travis CI, vous pouvez utiliser l’option “env”:</p>
 
 <pre><code># .travis.yml
 env:
@@ -173,9 +172,9 @@ env:
   - DB=postgres
 </code></pre>
 
-<p>When doing this, please read and understand everything about the build matrix described in <a href="/docs/user/build-configuration/">Build configuration</a>.</p>
+<p>Lorsque vous faites ceci, veuillez lire tout ce qui concerne la matrice de builds détaillé dans la section <a href="/docs/user/build-configuration/">configurer une build</a>.</p>
 
-<p>Lastly, make sure that you’re creating mysql and postgres databases in your build script according to the notes earlier in this document.</p>
+<p>Pour finir, assurez-vous d’avoir créer les bases de données mysql et postgres dans votre script de build conformément aux notes de ce document écrites plus tôt.</p>
 
 
 
